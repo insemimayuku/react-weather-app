@@ -1,23 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Weather from './components/Weather';
+import Favorites from './components/Favorites';
 
 function App() {
+  const [selectedCity, setSelectedCity] = useState('Paris');
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-300 p-4">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-center text-blue-800">🌤️ Weathering With You</h1>
+        
+        <Favorites onSelectCity={setSelectedCity} />
+
+        <Weather city={selectedCity} />
+      </div>
     </div>
   );
 }
