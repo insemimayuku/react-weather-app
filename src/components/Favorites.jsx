@@ -1,103 +1,98 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 
 const Favorites = ({ onSelectCity }) => {
-  const [cityInput, setCityInput] = useState('');
   const [favorites, setFavorites] = useState([]);
-  const [message, setMessage] = useState(null);
+  const [city, setCity] = useState("");
+  const [message, setMessage] = useState("");
 
-  // Charge les villes favorites depuis le localStorage au chargement
   useEffect(() => {
-    const stored = localStorage.getItem('favorites');
-    if (stored) {
-      setFavorites(JSON.parse(stored));
-    }
+    const saved = JSON.parse(localStorage.getItem("favorites")) || [];
+    setFavorites(saved);
   }, []);
 
-  // Sauvegarde les favoris à chaque mise à jour
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  const showMessage = (text, type = 'success') => {
-    setMessage({ text, type });
-    setTimeout(() => setMessage(null), 3000);
+  const saveFavorites = (list) => {
+    setFavorites(list);
+    localStorage.setItem("favorites", JSON.stringify(list));
   };
 
-  const handleAddCity = () => {
-    const city = cityInput.trim();
-    if (!city) return;
+  const addCity = () => {
+    const trimmedCity = city.trim();
+    if (!trimmedCity) return;
 
-    if (favorites.includes(city)) {
-      showMessage(`⚠️ "${city}" est déjà dans vos favoris`, 'warning');
-    } else {
-      setFavorites([...favorites, city]);
-      setCityInput('');
-      showMessage(`✅ "${city}" ajouté aux favoris`, 'success');
+    if (favorites.includes(trimmedCity)) {
+      setMessage(`⚠️ ${trimmedCity} est déjà dans les favoris`);
+      setTimeout(() => setMessage(""), 2000);
+      return;
     }
+
+    const updated = [...favorites, trimmedCity];
+    saveFavorites(updated);
+    setCity("");
+    setMessage(`✅ ${trimmedCity} ajoutée aux favoris`);
+    setTimeout(() => setMessage(""), 2000);
   };
 
-  const handleRemoveCity = (city) => {
-    const updatedFavorites = favorites.filter(fav => fav !== city);
-    setFavorites(updatedFavorites);
-    showMessage(`🗑️ "${city}" supprimé des favoris`, 'danger');
-  };
-
-  const handleSelect = (city) => {
-    onSelectCity(city);
+  const removeCity = (cityToRemove) => {
+    const updated = favorites.filter((c) => c !== cityToRemove);
+    saveFavorites(updated);
+    setMessage(`🗑️ ${cityToRemove} supprimée`);
+    setTimeout(() => setMessage(""), 2000);
   };
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 mb-6">
-      <h2 className="text-xl font-semibold mb-4">🌍 Villes enregistrées</h2>
+    <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-4 transition-colors">
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+        ⭐ Villes favorites
+      </h3>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3">
         <input
-          type="text"
-          className="flex-1 border p-2 rounded-md"
-          placeholder="Ajouter une ville..."
-          value={cityInput}
-          onChange={(e) => setCityInput(e.target.value)}
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Ajouter une ville"
+          className="flex-1 px-3 py-2 rounded-lg border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white outline-none"
+          onKeyDown={(e) => e.key === "Enter" && addCity()}
         />
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-          onClick={handleAddCity}
+          onClick={addCity}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded-lg"
         >
-          Ajouter
+          +
         </button>
       </div>
 
       {message && (
-        <div
-          className={`mb-4 px-4 py-2 rounded-md text-sm ${
-            message.type === 'danger'
-              ? 'bg-red-100 text-red-800'
-              : message.type === 'warning'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-green-100 text-green-800'
+        <p
+          className={`text-sm mb-2 ${
+            message.startsWith("⚠️")
+              ? "text-yellow-600"
+              : message.startsWith("🗑️")
+              ? "text-red-600"
+              : "text-green-600"
           }`}
         >
-          {message.text}
-        </div>
+          {message}
+        </p>
       )}
 
       <ul className="space-y-2">
-        {favorites.map((city, index) => (
+        {favorites.map((fav) => (
           <li
-            key={index}
-            className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded-md"
+            key={fav}
+            className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg"
           >
             <button
-              onClick={() => handleSelect(city)}
-              className="text-blue-600 hover:underline text-left"
+              onClick={() => onSelectCity(fav)}
+              className="cursor-pointer text-gray-800 dark:text-white hover:underline text-left flex-1"
             >
-              {city}
+              {fav}
             </button>
             <button
-              onClick={() => handleRemoveCity(city)}
-              className="text-red-500 hover:text-red-700"
-              title="Supprimer"
+              onClick={() => removeCity(fav)}
+              className="text-red-500 hover:text-red-600 ml-2"
+              aria-label={`Supprimer ${fav} des favoris`}
             >
-              ✕
+              ✖
             </button>
           </li>
         ))}
